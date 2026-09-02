@@ -1,0 +1,88 @@
+#!/usr/bin/env node
+
+/**
+ * Módulo de dependencias.
+ */
+
+const app = require('../app');
+const debug = require('debug')('proyecto-bicicletas:server');
+const http = require('http');
+
+/**
+ * Se obtiene el puerto desde las variables de entorno.
+ */
+
+const port = normalizePort(process.env.PORT || '3000');
+app.set('port', port);
+
+/**
+ * Se crea el servidor HTTP.
+ */
+
+const server = http.createServer(app);
+
+/**
+ * Escucha en el puerto configurado, en todas las interfaces de red.
+ */
+
+server.listen(port);
+server.on('error', onError);
+server.on('listening', onListening);
+
+/**
+ * Normaliza el puerto en número, string o false.
+ */
+
+function normalizePort(val) {
+  const port = parseInt(val, 10);
+
+  if (isNaN(port)) {
+    return val;
+  }
+
+  if (port >= 0) {
+    return port;
+  }
+
+  return false;
+}
+
+/**
+ * Manejo de eventos de error del servidor HTTP.
+ */
+
+function onError(error) {
+  if (error.syscall !== 'listen') {
+    throw error;
+  }
+
+  const bind = typeof port === 'string'
+    ? 'Pipe ' + port
+    : 'Port ' + port;
+
+  switch (error.code) {
+    case 'EACCES':
+      console.error(bind + ' requiere privilegios elevados');
+      process.exit(1);
+      break;
+    case 'EADDRINUSE':
+      console.error(bind + ' ya está en uso');
+      process.exit(1);
+      break;
+    default:
+      throw error;
+  }
+}
+
+/**
+ * Manejo del evento "listening" del servidor HTTP.
+ */
+
+function onListening() {
+  const addr = server.address();
+  const bind = typeof addr === 'string'
+    ? 'pipe ' + addr
+    : 'port ' + addr.port;
+  debug('Escuchando en ' + bind);
+  console.log(`Servidor corriendo en http://localhost:${port}`);
+}
