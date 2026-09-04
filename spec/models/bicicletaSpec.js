@@ -11,10 +11,6 @@ describe('Testing Bicicleta (con persistencia en Mongo)', () => {
     await Bicicleta.deleteMany({});
   });
 
-  afterAll(async () => {
-    await mongoose.connection.close();
-  });
-
   describe('Bicicleta.createInstance', () => {
     it('crea una instancia con los datos dados', () => {
       const bici = Bicicleta.createInstance('verde', 'urbana', [-12, -77]);
