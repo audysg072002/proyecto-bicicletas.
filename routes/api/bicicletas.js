@@ -3,64 +3,79 @@ const router = express.Router();
 const Bicicleta = require('../../models/bicicleta');
 
 // GET /api/bicicletas
-// Lista toda la colección de bicicletas
-router.get('/', function (req, res) {
-  res.status(200).json({ bicicletas: Bicicleta.allBicis });
+// Lista toda la colección de bicicletas (desde MongoDB)
+router.get('/', async function (req, res) {
+  try {
+    const bicicletas = await Bicicleta.allBicis();
+    res.status(200).json({ bicicletas });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
 });
 
 // POST /api/bicicletas/create
-// Crea una bicicleta nueva
-// body JSON esperado: { "id": 3, "color": "verde", "modelo": "urbana", "lat": 14.07, "lng": -87.19 }
-router.post('/create', function (req, res) {
-  const { id, color, modelo, lat, lng } = req.body;
+// Crea y guarda una bicicleta nueva en MongoDB
+// body JSON esperado: { "color": "verde", "modelo": "urbana", "lat": 14.07, "lng": -87.19 }
+router.post('/create', async function (req, res) {
+  try {
+    const { color, modelo, lat, lng } = req.body;
 
-  if (id === undefined || !color || !modelo || lat === undefined || lng === undefined) {
-    return res.status(400).json({
-      error: 'Faltan campos requeridos: id, color, modelo, lat, lng'
-    });
+    if (!color || !modelo || lat === undefined || lng === undefined) {
+      return res.status(400).json({
+        error: 'Faltan campos requeridos: color, modelo, lat, lng'
+      });
+    }
+
+    const nuevaBici = Bicicleta.createInstance(color, modelo, [lat, lng]);
+    await Bicicleta.add(nuevaBici);
+    res.status(201).json({ bicicleta: nuevaBici });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
   }
-
-  const nuevaBici = new Bicicleta(id, color, modelo, [lat, lng]);
-  Bicicleta.add(nuevaBici);
-  res.status(201).json({ bicicleta: nuevaBici });
 });
 
 // GET /api/bicicletas/:id
 // Devuelve una bicicleta por id
-router.get('/:id', function (req, res) {
+router.get('/:id', async function (req, res) {
   try {
-    const bici = Bicicleta.findById(req.params.id);
+    const bici = await Bicicleta.findById(req.params.id);
+    if (!bici) {
+      return res.status(404).json({ error: 'Bicicleta no encontrada' });
+    }
     res.status(200).json({ bicicleta: bici });
   } catch (err) {
-    res.status(404).json({ error: err.message });
+    res.status(404).json({ error: 'Bicicleta no encontrada' });
   }
 });
 
 // PUT /api/bicicletas/:id
 // Actualiza una bicicleta existente
-router.put('/:id', function (req, res) {
+router.put('/:id', async function (req, res) {
   try {
-    const bici = Bicicleta.findById(req.params.id);
     const { color, modelo, lat, lng } = req.body;
+    const cambios = {};
+    if (color !== undefined) cambios.color = color;
+    if (modelo !== undefined) cambios.modelo = modelo;
+    if (lat !== undefined && lng !== undefined) cambios.ubicacion = [lat, lng];
 
-    if (color !== undefined) bici.color = color;
-    if (modelo !== undefined) bici.modelo = modelo;
-    if (lat !== undefined && lng !== undefined) bici.ubicacion = [lat, lng];
-
+    const bici = await Bicicleta.findByIdAndUpdate(req.params.id, cambios, { new: true });
+    if (!bici) {
+      return res.status(404).json({ error: 'Bicicleta no encontrada' });
+    }
     res.status(200).json({ bicicleta: bici });
   } catch (err) {
-    res.status(404).json({ error: err.message });
+    res.status(404).json({ error: 'Bicicleta no encontrada' });
   }
 });
 
 // DELETE /api/bicicletas/:id
-// Elimina una bicicleta de la colección
-router.delete('/:id', function (req, res) {
+// Elimina una bicicleta de la base de datos
+router.delete('/:id', async function (req, res) {
   try {
-    Bicicleta.removeById(req.params.id);
+    await Bicicleta.removeById(req.params.id);
     res.status(204).send();
   } catch (err) {
-    res.status(404).json({ error: err.message });
+    res.status(404).json({ error: 'Bicicleta no encontrada' });
   }
 });
 

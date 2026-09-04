@@ -19,7 +19,7 @@ document.addEventListener('DOMContentLoaded', function () {
         const [biciLat, biciLng] = bici.ubicacion;
         L.marker([biciLat, biciLng])
           .addTo(map)
-          .bindPopup(`Bicicleta #${bici.id}<br>Color: ${bici.color}<br>Modelo: ${bici.modelo}`);
+          .bindPopup(`Bicicleta ${bici._id}<br>Color: ${bici.color}<br>Modelo: ${bici.modelo}`);
       });
     })
     .catch(err => console.error('Error cargando bicicletas:', err));

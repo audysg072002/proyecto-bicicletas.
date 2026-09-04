@@ -1,48 +1,41 @@
-// Modelo de Bicicleta.
-// La colección se mantiene en memoria (un arreglo), tal como pide la guía.
+const mongoose = require('mongoose');
 
-class Bicicleta {
-  constructor(id, color, modelo, ubicacion) {
-    this.id = id;
-    this.color = color;
-    this.modelo = modelo;
-    // ubicacion = [lat, lng]
-    this.ubicacion = ubicacion;
+const BicicletaSchema = new mongoose.Schema({
+  color: String,
+  modelo: String,
+  // ubicacion = [lat, lng]
+  ubicacion: {
+    type: [Number],
+    index: { type: '2dsphere', sparse: true }
   }
+});
 
-  toString() {
-    return `id: ${this.id} | color: ${this.color} | modelo: ${this.modelo}`;
-  }
-}
-
-// Colección en memoria (estática a nivel de módulo)
-Bicicleta.allBicis = [];
-
-Bicicleta.add = function (aBici) {
-  Bicicleta.allBicis.push(aBici);
+BicicletaSchema.methods.toString = function () {
+  return `id: ${this._id} | color: ${this.color} | modelo: ${this.modelo}`;
 };
 
-Bicicleta.findById = function (aBiciId) {
-  const bici = Bicicleta.allBicis.find(b => b.id == aBiciId);
-  if (bici) return bici;
-  throw new Error(`No existe una bicicleta con el id ${aBiciId}`);
+// Crea una instancia (sin guardarla todavía) a partir de sus datos.
+BicicletaSchema.statics.createInstance = function (color, modelo, ubicacion) {
+  return new this({ color, modelo, ubicacion });
 };
 
-Bicicleta.removeById = function (aBiciId) {
-  const index = Bicicleta.allBicis.findIndex(b => b.id == aBiciId);
-  if (index === -1) {
-    throw new Error(`No existe una bicicleta con el id ${aBiciId}`);
-  }
-  Bicicleta.allBicis.splice(index, 1);
+// Devuelve todas las bicicletas de la colección.
+BicicletaSchema.statics.allBicis = function () {
+  return this.find({});
 };
 
-// --- Datos semilla ---
-// Un par de bicicletas ya cargadas en la colección, con ubicaciones
-// cercanas al centro del mapa (Tegucigalpa, Honduras: 14.0723, -87.1921)
-const a = new Bicicleta(1, 'rojo', 'urbana', [14.0818, -87.2068]);
-const b = new Bicicleta(2, 'azul', 'montaña', [14.0736, -87.1892]);
+// Guarda una bicicleta nueva en la base de datos.
+BicicletaSchema.statics.add = function (aBici) {
+  return this.create(aBici);
+};
 
-Bicicleta.add(a);
-Bicicleta.add(b);
+// Elimina una bicicleta por su id.
+BicicletaSchema.statics.removeById = function (aBiciId) {
+  return this.findByIdAndDelete(aBiciId);
+};
 
-module.exports = Bicicleta;
+// Nota: findById, findByIdAndUpdate, find, etc. ya vienen incluidos
+// de forma nativa en cualquier modelo de Mongoose, no hace falta
+// redefinirlos aquí.
+
+module.exports = mongoose.model('Bicicleta', BicicletaSchema);
