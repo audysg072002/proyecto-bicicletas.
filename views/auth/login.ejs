@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title><%= title %></title>
+  <link rel="stylesheet" href="/stylesheets/style.css">
+</head>
+<body>
+  <h1>Iniciar sesión</h1>
+
+  <% if (error && error.length) { %>
+    <p style="color:#c0392b;"><%= error[0] %></p>
+  <% } %>
+  <% if (success && success.length) { %>
+    <p style="color:#27ae60;"><%= success[0] %></p>
+  <% } %>
+
+  <form action="/login" method="POST">
+    <p>
+      <label>Email<br>
+        <input type="email" name="email" required>
+      </label>
+    </p>
+    <p>
+      <label>Contraseña<br>
+        <input type="password" name="password" required>
+      </label>
+    </p>
+    <button type="submit">Entrar</button>
+  </form>
+
+  <p>
+    <a href="/forgot-password">¿Olvidaste tu contraseña?</a> ·
+    <a href="/register">Crear cuenta</a>
+  </p>
+</body>
+</html>

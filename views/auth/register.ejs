@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title><%= title %></title>
+  <link rel="stylesheet" href="/stylesheets/style.css">
+</head>
+<body>
+  <h1>Crear cuenta</h1>
+
+  <% if (error && error.length) { %>
+    <p style="color:#c0392b;"><%= error[0] %></p>
+  <% } %>
+
+  <form action="/register" method="POST">
+    <p>
+      <label>Email<br>
+        <input type="email" name="email" required>
+      </label>
+    </p>
+    <p>
+      <label>Contraseña<br>
+        <input type="password" name="password" required minlength="6">
+      </label>
+    </p>
+    <button type="submit">Registrarme</button>
+  </form>
+
+  <p><a href="/login">Ya tengo cuenta, iniciar sesión</a></p>
+</body>
+</html>

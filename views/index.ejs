@@ -11,9 +11,16 @@
 
   <hr>
   <p>Proyecto integrador: API de bicicletas en memoria + mapa interactivo.</p>
+
+  <% if (user) { %>
+    <p>Sesión iniciada como <strong><%= user.email %></strong> — <a href="/logout">Cerrar sesión</a></p>
+  <% } else { %>
+    <p><a href="/login">Iniciar sesión</a> · <a href="/register">Crear cuenta</a></p>
+  <% } %>
+
   <ul>
-    <li><a href="/mapa">Ver mapa de bicicletas</a></li>
-    <li><a href="/api/bicicletas">Ver API de bicicletas (JSON)</a></li>
+    <li><a href="/mapa">Ver mapa de bicicletas</a> (requiere sesión iniciada)</li>
+    <li><a href="/api/bicicletas">Ver API de bicicletas (JSON, requiere token JWT)</a></li>
   </ul>
 </body>
 </html>

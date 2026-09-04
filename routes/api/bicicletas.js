@@ -1,6 +1,12 @@
 const express = require('express');
 const router = express.Router();
 const Bicicleta = require('../../models/bicicleta');
+const { requireJWT } = require('../../middleware/auth');
+
+// Todas las rutas de este archivo requieren un JWT válido
+// (header: Authorization: Bearer <token>).
+router.use(requireJWT);
+
 
 // GET /api/bicicletas
 // Lista toda la colección de bicicletas (desde MongoDB)
