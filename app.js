@@ -1,3 +1,8 @@
+// Debe ser el primer require de todo el archivo (así lo exige New Relic).
+// Sin NEW_RELIC_LICENSE_KEY configurada, solo imprime un aviso y no hace
+// nada más — no rompe el proyecto en local.
+require('newrelic');
+
 const createError = require('http-errors');
 const express = require('express');
 const path = require('path');

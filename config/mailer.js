@@ -2,14 +2,18 @@ const nodemailer = require('nodemailer');
 
 let transporterPromise;
 
-// Si defines EMAIL_HOST / EMAIL_USER / EMAIL_PASS como variables de
-// entorno, usa un SMTP real. Si no, genera una cuenta de prueba de
-// Ethereal automáticamente (no manda el correo a nadie de verdad,
-// pero te da un link para "verlo" como si hubiera llegado a un inbox).
+// - En producción (NODE_ENV=production): usa un SMTP real, configurado
+//   con EMAIL_HOST/EMAIL_USER/EMAIL_PASS. En esta entrega se usa Gmail
+//   (smtp.gmail.com) con una "contraseña de aplicación", pero funciona
+//   igual con cualquier otro SMTP (Brevo, SendGrid, etc.) solo cambiando
+//   esas variables.
+// - En cualquier otro caso (local, test): genera una cuenta de prueba de
+//   Ethereal automáticamente — no manda el correo a nadie de verdad, pero
+//   da un link para "verlo" como si hubiera llegado a un inbox.
 function getTransporter() {
   if (transporterPromise) return transporterPromise;
 
-  if (process.env.EMAIL_HOST && process.env.EMAIL_USER && process.env.EMAIL_PASS) {
+  if (process.env.NODE_ENV === 'production' && process.env.EMAIL_HOST && process.env.EMAIL_USER && process.env.EMAIL_PASS) {
     transporterPromise = Promise.resolve(
       nodemailer.createTransport({
         host: process.env.EMAIL_HOST,
@@ -41,8 +45,13 @@ function getTransporter() {
 async function sendMail({ to, subject, html }) {
   const transporter = await getTransporter();
 
+  // En producción, este remitente debe ser la misma cuenta que autenticas
+  // en EMAIL_USER (Gmail exige que "from" y la cuenta que envía coincidan).
+  // En local (Ethereal) no importa cuál sea.
+  const from = process.env.EMAIL_FROM || '"Proyecto Bicicletas" <no-reply@bicicletas.local>';
+
   const info = await transporter.sendMail({
-    from: '"Proyecto Bicicletas" <no-reply@bicicletas.local>',
+    from,
     to,
     subject,
     html

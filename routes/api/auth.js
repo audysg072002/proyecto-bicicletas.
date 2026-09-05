@@ -33,4 +33,38 @@ router.post('/login', function (req, res) {
   });
 });
 
+// POST /api/auth/facebook
+// body: { "accessToken": "<token que el cliente obtuvo del SDK de Facebook>" }
+// Valida ese token contra la Graph API de Facebook; si es válido,
+// crea/recupera el usuario y devuelve un JWT igual que el login normal.
+router.post('/facebook', async function (req, res) {
+  try {
+    const { accessToken } = req.body;
+    if (!accessToken) {
+      return res.status(400).json({ error: 'Falta el accessToken de Facebook' });
+    }
+
+    const fbResponse = await fetch(
+      `https://graph.facebook.com/me?fields=id,name,email&access_token=${encodeURIComponent(accessToken)}`
+    );
+    const fbProfile = await fbResponse.json();
+
+    if (!fbResponse.ok || fbProfile.error) {
+      return res.status(401).json({ error: 'Token de Facebook inválido o expirado' });
+    }
+
+    const user = await User.findOneOrCreateByFacebook(fbProfile);
+
+    const token = jwt.sign(
+      { id: user._id, email: user.email },
+      JWT_SECRET,
+      { expiresIn: '2h' }
+    );
+
+    res.status(200).json({ token });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
 module.exports = router;
